@@ -1,0 +1,62 @@
+// llms.txt and its companion files vs. existing web standards
+// llms.txt is advisory and unenforced. It does not block crawling and does
+// not enumerate every URL. It is positioned as an LLM-readable curated
+// summary, not an access-control or sitemap document.
+digraph llms_txt_ecosystem {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Site [label="Website root\n/", fillcolor="#e0f2fe", color="#0369a1", shape=ellipse];
+
+  subgraph cluster_classic {
+    label="Classic web standards (search-era)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#475569";
+    fontcolor="#475569";
+
+    Robots [label=<<b>robots.txt</b><br/>access-control directives<br/>audience: search bots<br/>format: custom>,
+             fillcolor="#f1f5f9", color="#475569"];
+    Sitemap [label=<<b>sitemap.xml</b><br/>enumerate every URL<br/>audience: search bots<br/>format: XML>,
+              fillcolor="#f1f5f9", color="#475569"];
+  }
+
+  subgraph cluster_llmera {
+    label="LLM-era files (proposed, advisory)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#1e40af";
+    fontcolor="#1e40af";
+
+    LLMS [label=<<b>llms.txt</b><br/>curated map of high-value content<br/>audience: LLMs / AI agents<br/>format: Markdown>,
+           fillcolor="#dbeafe", color="#1e40af"];
+    LLMSFull [label=<<b>llms-full.txt</b><br/>single comprehensive Markdown<br/>(Cloudflare: ~3.7M tokens,<br/>Vercel: ~400k words)>,
+               fillcolor="#dbeafe", color="#1e40af"];
+    MD       [label=<<b>page.md variants</b><br/>append .md to any URL<br/>strips HTML/JS/nav>,
+               fillcolor="#dbeafe", color="#1e40af"];
+  }
+
+  Site -> Robots   [label="/robots.txt"];
+  Site -> Sitemap  [label="/sitemap.xml"];
+  Site -> LLMS     [label="/llms.txt"];
+  Site -> LLMSFull [label="/llms-full.txt", style=dashed];
+  Site -> MD       [label="/docs/page.md", style=dashed];
+
+  // properties summary
+  prop [shape=plaintext, label=<
+    <table border="1" cellborder="1" cellspacing="0" cellpadding="4">
+      <tr><td bgcolor="#f1f5f9"><b>property</b></td><td bgcolor="#f1f5f9"><b>robots.txt</b></td><td bgcolor="#f1f5f9"><b>sitemap.xml</b></td><td bgcolor="#dbeafe"><b>llms.txt</b></td></tr>
+      <tr><td>purpose</td><td>access control</td><td>indexable URL list</td><td>LLM context map</td></tr>
+      <tr><td>format</td><td>custom directives</td><td>XML</td><td>Markdown</td></tr>
+      <tr><td>enforced?</td><td>convention</td><td>convention</td><td>no</td></tr>
+      <tr><td>blocks crawling?</td><td>yes</td><td>no</td><td>no</td></tr>
+      <tr><td>major AI platform endorses?</td><td>n/a</td><td>n/a</td><td><b>none yet</b></td></tr>
+    </table>
+  >];
+
+  Site -> prop [style=invis];
+  {rank=sink; prop}
+}

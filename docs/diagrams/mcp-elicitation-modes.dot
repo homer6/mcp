@@ -1,0 +1,59 @@
+// Elicitation modes: form vs URL (SEP-1036, schema/2025-11-25)
+// Form mode is in-band — values pass through the MCP layer, restricted to
+// PrimitiveSchemaDefinition (no nested objects). URL mode is out-of-band —
+// the user navigates in their browser; the server is told via a
+// completion notification. Sensitive flows (OAuth, payments, API keys)
+// MUST use URL mode.
+digraph mcp_elicitation_modes {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Server [label="MCP Server", fillcolor="#dcfce7", color="#166534", shape=ellipse];
+
+  subgraph cluster_form {
+    label="mode: \"form\"  — in-band, non-sensitive";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#0369a1";
+    fontcolor="#0369a1";
+
+    FormReq [label=<<b>elicitation/create</b><br/>mode: \"form\"<br/>message<br/>requestedSchema<br/>(PrimitiveSchemaDefinition only,<br/>no nested objects)>,
+              fillcolor="#e0f2fe", color="#0369a1"];
+    FormUI  [label="Client renders\nform inline", fillcolor="#dbeafe", color="#1e40af"];
+    FormRes [label=<<b>ElicitResult</b><br/>action: accept | decline | cancel<br/>content: {\\…} (matches schema)>,
+              fillcolor="#dbeafe", color="#1e40af"];
+
+    FormReq -> FormUI -> FormRes;
+  }
+
+  subgraph cluster_url {
+    label="mode: \"url\"  — out-of-band, sensitive";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#9d174d";
+    fontcolor="#9d174d";
+
+    UrlReq    [label=<<b>elicitation/create</b><br/>mode: \"url\"<br/>elicitationId<br/>url<br/>message>,
+                fillcolor="#fce7f3", color="#9d174d"];
+    Browser   [label="User navigates in browser\n(OAuth, payment, credentials)\nMCP layer never sees secrets",
+                fillcolor="#fdf2f8", color="#9d174d"];
+    UrlAck    [label=<<b>ElicitResult</b><br/>action: accept | decline | cancel<br/><i>content omitted</i>>,
+                fillcolor="#fce7f3", color="#9d174d"];
+    Done      [label=<<b>notifications/elicitation/complete</b><br/>{ elicitationId }<br/>(server is told it can proceed)>,
+                fillcolor="#fce7f3", color="#9d174d"];
+
+    UrlReq -> Browser -> UrlAck;
+    Browser -> Done [style=dashed];
+  }
+
+  Server -> FormReq;
+  Server -> UrlReq;
+
+  // The redirect-mid-flight error
+  ErrRedirect [label=<<b>-32042  URLElicitationRequiredError</b><br/>any request can return this error to<br/>tell the client \"actually, do URL elicitation\"<br/>data.elicitations: ElicitRequestURLParams[]>,
+                fillcolor="#fef3c7", color="#b45309", shape=note];
+  Server -> ErrRedirect [style=dotted, arrowhead=none];
+}

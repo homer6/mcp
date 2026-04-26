@@ -1,0 +1,55 @@
+// MCP connection lifecycle (per spec/2025-11-25/basic/lifecycle.mdx)
+// Three phases: Initialization, Operation, Shutdown.
+// Initialization MUST be the first interaction and MUST complete before
+// the operating phase. Cancellation of `initialize` itself is forbidden.
+digraph mcp_lifecycle {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Disconnected [label="Disconnected", fillcolor="#f1f5f9", color="#475569", shape=ellipse];
+
+  subgraph cluster_init {
+    label="Phase 1 — Initialization";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#1e40af";
+    fontcolor="#1e40af";
+
+    InitReq  [label=<<b>client →</b> initialize<br/>protocolVersion, ClientCapabilities,<br/>clientInfo (Implementation)>,
+               fillcolor="#dbeafe", color="#1e40af"];
+    InitRes  [label=<<b>server →</b> InitializeResult<br/>protocolVersion (negotiated),<br/>ServerCapabilities, instructions?>,
+               fillcolor="#dcfce7", color="#166534"];
+    InitNote [label=<<b>client →</b> notifications/initialized<br/>(no response)>,
+               fillcolor="#dbeafe", color="#1e40af"];
+
+    InitReq -> InitRes [label="response"];
+    InitRes -> InitNote [label="ack"];
+  }
+
+  Operating [label=<<b>Phase 2 — Operation</b><br/>requests &amp; notifications constrained by<br/>negotiated capabilities and protocol version<br/><br/><font point-size="9">tools/*, resources/*, prompts/*,<br/>sampling/*, elicitation/*, roots/*,<br/>tasks/*, logging/*, completion/*</font>>,
+              fillcolor="#fef3c7", color="#b45309"];
+
+  subgraph cluster_shut {
+    label="Phase 3 — Shutdown";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#475569";
+    fontcolor="#475569";
+
+    ShutStdio [label="STDIO\nclose stdin → wait → SIGTERM → SIGKILL", fillcolor="#f1f5f9", color="#475569"];
+    ShutHttp  [label="Streamable HTTP\nclose associated connections",   fillcolor="#f1f5f9", color="#475569"];
+  }
+
+  Disconnected -> InitReq [label="connect"];
+  InitNote -> Operating;
+  Operating -> ShutStdio [label="stdio transport"];
+  Operating -> ShutHttp  [label="http transport"];
+  ShutStdio -> Disconnected;
+  ShutHttp  -> Disconnected;
+
+  // Errors that abort init
+  InitReq -> Disconnected [label="version unsupported\n(client disconnects)", style=dashed, color="#b91c1c", fontcolor="#b91c1c"];
+}

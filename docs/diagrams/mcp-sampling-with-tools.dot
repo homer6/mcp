@@ -1,0 +1,48 @@
+// Sampling-with-Tools agent loop (SEP-1577, schema/2025-11-25)
+// Servers can run a full agentic loop without owning their own model:
+// they ask the Host's LLM to think, the model emits ToolUseContent, the
+// server executes the tool itself, and feeds ToolResultContent back into
+// the same sampling conversation until the model returns a final message.
+digraph mcp_sampling_with_tools {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10];
+
+  Server [label="MCP Server", fillcolor="#dcfce7", color="#166534", shape=ellipse];
+  Host   [label="Host\n(owns LLM &amp; user consent)", fillcolor="#dbeafe", color="#1e40af", shape=ellipse];
+  Model  [label="LLM", fillcolor="#fef3c7", color="#b45309", shape=ellipse];
+
+  Step1 [label=<<b>1.</b> sampling/createMessage<br/>messages, modelPreferences,<br/>tools[], toolChoice {auto|required|none}>,
+          fillcolor="#f0fdf4", color="#166534"];
+  Step2 [label=<<b>2.</b> Host shows request to user<br/>(human-in-the-loop)>,
+          fillcolor="#eff6ff", color="#1e40af"];
+  Step3 [label=<<b>3.</b> Model produces<br/>SamplingMessage (assistant)<br/>content includes ToolUseContent>,
+          fillcolor="#fefce8", color="#b45309"];
+  Step4 [label=<<b>4.</b> Server executes the tool itself<br/>(no need for its own model API key)>,
+          fillcolor="#f0fdf4", color="#166534"];
+  Step5 [label=<<b>5.</b> Server appends ToolResultContent<br/>+ next sampling/createMessage>,
+          fillcolor="#f0fdf4", color="#166534"];
+  Step6 [label=<<b>6.</b> Model returns final TextContent<br/>stopReason: \"endTurn\"<br/>(or another tool_use → loop)>,
+          fillcolor="#fefce8", color="#b45309"];
+
+  Server -> Step1;
+  Step1  -> Host  [label="request"];
+  Host   -> Step2;
+  Step2  -> Model [label="approved"];
+  Model  -> Step3;
+  Step3  -> Server [label="result"];
+  Server -> Step4;
+  Step4  -> Step5;
+  Step5  -> Host  [label="continue", style=dashed];
+  Host   -> Model [style=dashed];
+  Model  -> Step6;
+  Step6  -> Server [style=dashed, label="final"];
+  Step6  -> Step1  [label="another tool_use", style=dotted, color="#94a3b8", constraint=false];
+
+  // capability gate
+  gate [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+         label=<<b>capability gate (SEP-1577):</b><br align="left"/>server MAY include tools[] / toolChoice<br align="left"/>only if client declared<br align="left"/>ClientCapabilities.sampling.tools<br align="left"/>otherwise client MUST return an error<br align="left"/>>];
+  Step1 -> gate [style=dashed, arrowhead=none, color="#94a3b8"];
+}

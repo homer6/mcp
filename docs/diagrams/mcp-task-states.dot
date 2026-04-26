@@ -1,0 +1,37 @@
+// Task state machine (SEP-1686, schema/2025-11-25)
+// Tasks turn any task-augmentable request into a "call now, fetch later"
+// operation. Status flows are advisory; actual transitions depend on what
+// the underlying request needs.
+digraph mcp_task_states {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Created [label="Task created\n(server returned\nCreateTaskResult)", fillcolor="#e0f2fe", color="#0369a1"];
+
+  Working    [label=<<b>working</b><br/>request being processed>,
+               fillcolor="#fef3c7", color="#b45309"];
+  Waiting    [label=<<b>input_required</b><br/>blocked on elicitation<br/>or sampling response>,
+               fillcolor="#fce7f3", color="#9d174d"];
+  Completed  [label=<<b>completed</b><br/>retrieve via tasks/result>,
+               fillcolor="#dcfce7", color="#166534", shape=doublecircle, style="filled"];
+  Failed     [label=<<b>failed</b><br/>statusMessage explains>,
+               fillcolor="#fee2e2", color="#991b1b", shape=doublecircle, style="filled"];
+  Cancelled  [label=<<b>cancelled</b><br/>via tasks/cancel>,
+               fillcolor="#f3e8ff", color="#6b21a8", shape=doublecircle, style="filled"];
+
+  Created   -> Working;
+  Working   -> Waiting   [label="needs user / model"];
+  Waiting   -> Working   [label="response received"];
+  Working   -> Completed [label="result ready"];
+  Working   -> Failed    [label="error\n(or tool isError)"];
+  Working   -> Cancelled [label="tasks/cancel"];
+  Waiting   -> Cancelled [label="tasks/cancel"];
+
+  // observability
+  notify [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+           label=<<b>observability:</b><br align="left"/>notifications/tasks/status (optional)<br align="left"/>tasks/get (poll)<br align="left"/>tasks/list (paginated)<br align="left"/>>];
+  Working -> notify [style=dashed, arrowhead=none, color="#94a3b8"];
+}

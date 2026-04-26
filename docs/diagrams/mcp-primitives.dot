@@ -1,0 +1,86 @@
+// MCP primitives, grouped by who initiates and who controls
+// Server-exposed primitives are invoked BY the client (often the LLM).
+// Client-exposed primitives are invoked BY the server (always nested in a
+// client-initiated request, per SEP-2260). Bidirectional/utility primitives
+// are out-of-band concerns either side may use.
+digraph mcp_primitives {
+  rankdir=LR;
+  fontname="Helvetica";
+  fontsize=11;
+  bgcolor="white";
+  newrank=true;
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10];
+
+  Client [label="Client\n(in Host)", fillcolor="#dbeafe", color="#1e40af", shape=ellipse];
+  Server [label="Server",            fillcolor="#dcfce7", color="#166534", shape=ellipse];
+
+  // Server primitives — the LLM/client reads & invokes
+  subgraph cluster_server_primitives {
+    label="Server-exposed  (model + app + user act on these)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#166534";
+    fontcolor="#166534";
+
+    Tools     [label=<<b>Tools</b><br/>model-controlled<br/><font point-size="9">tools/list, tools/call</font>>,
+                fillcolor="#f0fdf4", color="#166534"];
+    Resources [label=<<b>Resources</b><br/>app-controlled<br/><font point-size="9">resources/list, /read,<br/>/templates/list, /subscribe</font>>,
+                fillcolor="#f0fdf4", color="#166534"];
+    Prompts   [label=<<b>Prompts</b><br/>user-controlled<br/><font point-size="9">prompts/list, /get</font>>,
+                fillcolor="#f0fdf4", color="#166534"];
+  }
+
+  // Client primitives — the server invokes (must nest in a client request)
+  subgraph cluster_client_primitives {
+    label="Client-exposed  (server requests, host gates)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#1e40af";
+    fontcolor="#1e40af";
+
+    Sampling    [label=<<b>Sampling</b><br/>server asks Host's LLM<br/><font point-size="9">sampling/createMessage<br/>(+ tools, toolChoice)</font>>,
+                  fillcolor="#eff6ff", color="#1e40af"];
+    Roots       [label=<<b>Roots</b><br/>file:// boundary<br/><font point-size="9">roots/list</font>>,
+                  fillcolor="#eff6ff", color="#1e40af"];
+    Elicitation [label=<<b>Elicitation</b><br/>ask the user<br/><font point-size="9">elicitation/create<br/>mode: form | url</font>>,
+                  fillcolor="#eff6ff", color="#1e40af"];
+  }
+
+  // Cross-cutting utilities
+  subgraph cluster_utilities {
+    label="Utilities &amp; cross-cutting";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#b45309";
+    fontcolor="#b45309";
+
+    Tasks       [label=<<b>Tasks</b>  (2025-11-25)<br/>async work primitive<br/><font point-size="9">tasks/get, /result, /list, /cancel</font>>,
+                  fillcolor="#fef3c7", color="#b45309"];
+    Logging     [label=<<b>Logging</b><br/>server → client<br/><font point-size="9">logging/setLevel,<br/>notifications/message</font>>,
+                  fillcolor="#fef3c7", color="#b45309"];
+    Progress    [label=<<b>Progress</b><br/>either direction<br/><font point-size="9">notifications/progress<br/>via progressToken</font>>,
+                  fillcolor="#fef3c7", color="#b45309"];
+    Completion  [label=<<b>Completion</b><br/>argument autocomplete<br/><font point-size="9">completion/complete</font>>,
+                  fillcolor="#fef3c7", color="#b45309"];
+    Cancel      [label=<<b>Cancellation</b><br/>either direction<br/><font point-size="9">notifications/cancelled<br/>(non-task only)</font>>,
+                  fillcolor="#fef3c7", color="#b45309"];
+    Ping        [label=<<b>Ping</b><br/>liveness, both ways>,
+                  fillcolor="#fef3c7", color="#b45309"];
+  }
+
+  Client -> Tools     [color="#166534"];
+  Client -> Resources [color="#166534"];
+  Client -> Prompts   [color="#166534"];
+
+  Server -> Sampling    [color="#1e40af"];
+  Server -> Roots       [color="#1e40af"];
+  Server -> Elicitation [color="#1e40af"];
+
+  Client -> Completion [style=dotted, color="#b45309"];
+  Server -> Logging    [style=dotted, color="#b45309"];
+  Server -> Progress   [style=dotted, dir=both, color="#b45309"];
+  Server -> Tasks      [style=dotted, dir=both, color="#b45309"];
+  Server -> Cancel     [style=dotted, dir=both, color="#b45309"];
+  Server -> Ping       [style=dotted, dir=both, color="#b45309"];
+}

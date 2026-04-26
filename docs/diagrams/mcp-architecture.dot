@@ -1,0 +1,53 @@
+// MCP Architecture: Host / Client / Server
+// Design constraint from the spec: each MCP Client maintains a 1:1 connection
+// with one MCP Server. The Host (the application housing the LLM) coordinates
+// many Clients. Servers cannot see each other or the full conversation;
+// isolation is enforced by the Host.
+digraph mcp_architecture {
+  rankdir=LR;
+  fontname="Helvetica";
+  fontsize=11;
+  bgcolor="white";
+  compound=true;
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10];
+
+  subgraph cluster_host {
+    label="Host application  (Claude Desktop, Cursor, VS Code, custom agent...)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#475569";
+    fontcolor="#475569";
+    fontsize=12;
+    margin=16;
+
+    LLM      [label="LLM\n(Claude / GPT / Gemini / ...)", fillcolor="#fef3c7", color="#b45309", shape=ellipse];
+    ClientA  [label="MCP Client A", fillcolor="#dbeafe", color="#1e40af"];
+    ClientB  [label="MCP Client B", fillcolor="#dbeafe", color="#1e40af"];
+    ClientC  [label="MCP Client C", fillcolor="#dbeafe", color="#1e40af"];
+
+    LLM -> ClientA [style=dotted, arrowhead=none, color="#94a3b8"];
+    LLM -> ClientB [style=dotted, arrowhead=none, color="#94a3b8"];
+    LLM -> ClientC [style=dotted, arrowhead=none, color="#94a3b8"];
+  }
+
+  ServerA [label="MCP Server\n(GitHub)",     fillcolor="#dcfce7", color="#166534"];
+  ServerB [label="MCP Server\n(Filesystem)", fillcolor="#dcfce7", color="#166534"];
+  ServerC [label="MCP Server\n(Slack)",      fillcolor="#dcfce7", color="#166534"];
+
+  ClientA -> ServerA [label="Streamable HTTP", dir=both, color="#0f766e", penwidth=1.5];
+  ClientB -> ServerB [label="STDIO",            dir=both, color="#0f766e", penwidth=1.5];
+  ClientC -> ServerC [label="Streamable HTTP", dir=both, color="#0f766e", penwidth=1.5];
+
+  // legend
+  legend [shape=plaintext, fillcolor="white", style="", label=<
+    <table border="0" cellborder="0" cellspacing="2">
+      <tr><td align="left"><b>Legend</b></td></tr>
+      <tr><td align="left"><font color="#94a3b8">····</font>  Host coordinates clients</td></tr>
+      <tr><td align="left"><font color="#0f766e">────</font>  JSON-RPC 2.0 over transport</td></tr>
+      <tr><td align="left">Each Client ↔ Server pair is 1:1</td></tr>
+    </table>
+  >];
+
+  {rank=sink; legend}
+}

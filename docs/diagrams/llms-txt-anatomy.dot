@@ -1,0 +1,52 @@
+// llms.txt file anatomy
+// The proposed format (Howard, Sept 2024) is intentionally Markdown so that
+// LLMs can parse it natively. Only the H1 is required; everything else is
+// optional but conventional.
+digraph llms_txt_anatomy {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  File [label=<<b>/llms.txt</b><br/>plain Markdown, served at site root>,
+         fillcolor="#e0f2fe", color="#0369a1"];
+
+  H1   [label=<<b># Project / Site name</b><br/><i>(only required element)</i>>,
+         fillcolor="#dcfce7", color="#166534"];
+  BQ   [label=<<b>&gt; Blockquote summary</b><br/>1–2 sentences of context for the model>,
+         fillcolor="#fef3c7", color="#b45309"];
+  Pros [label=<<b>Optional prose</b><br/>how to interpret the file,<br/>caveats, audience notes>,
+         fillcolor="#fef9c3", color="#a16207"];
+
+  subgraph cluster_h2 {
+    label="## H2 sections — curated link lists";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#1e40af";
+    fontcolor="#1e40af";
+
+    H2a  [label="## Getting Started", fillcolor="#dbeafe", color="#1e40af"];
+    L1a  [label="- [Quickstart](url): description", fillcolor="#eff6ff", color="#1e40af", shape=note];
+    L2a  [label="- [Auth](url): description",       fillcolor="#eff6ff", color="#1e40af", shape=note];
+
+    H2b  [label="## API Reference", fillcolor="#dbeafe", color="#1e40af"];
+    L1b  [label="- [Payments](url): description",   fillcolor="#eff6ff", color="#1e40af", shape=note];
+    L2b  [label="- [Webhooks](url): description",   fillcolor="#eff6ff", color="#1e40af", shape=note];
+
+    H2a -> L1a [arrowhead=none, color="#94a3b8"];
+    H2a -> L2a [arrowhead=none, color="#94a3b8"];
+    H2b -> L1b [arrowhead=none, color="#94a3b8"];
+    H2b -> L2b [arrowhead=none, color="#94a3b8"];
+  }
+
+  Optional [label=<<b>Optional Stripe-style \"Instructions\"</b><br/>system-prompt-flavored guidance<br/>for AI coding assistants>,
+             fillcolor="#fce7f3", color="#9d174d"];
+
+  File -> H1   [label="line 1"];
+  H1   -> BQ   [label="conventional next"];
+  BQ   -> Pros [label="optional"];
+  Pros -> H2a  [label="link sections"];
+  H2a  -> H2b  [label="more sections", style=dashed];
+  H2b  -> Optional [label="rare extension", style=dashed];
+}

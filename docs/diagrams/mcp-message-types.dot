@@ -1,0 +1,40 @@
+// JSON-RPC 2.0 message types in MCP
+// MCP defines exactly three JSONRPCMessage shapes. Notifications carry no `id`
+// and never receive a response; Responses carry the original request `id` and
+// either a `result` or an `error`.
+digraph mcp_message_types {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Msg [label="JSONRPCMessage\n(jsonrpc: \"2.0\")", fillcolor="#e0f2fe", color="#0369a1"];
+
+  Req [label=<<b>Request</b><br/>has <i>id</i> &amp; <i>method</i><br/>expects a response>,
+        fillcolor="#dbeafe", color="#1e40af"];
+  Not [label=<<b>Notification</b><br/>has <i>method</i>, no <i>id</i><br/>no response expected>,
+        fillcolor="#fef3c7", color="#b45309"];
+  Res [label=<<b>Response</b><br/>echoes request <i>id</i><br/>carries result OR error>,
+        fillcolor="#dcfce7", color="#166534"];
+
+  Result [label=<<b>Result</b><br/>arbitrary JSON object<br/>plus optional <i>_meta</i>>,
+           fillcolor="#f0fdf4", color="#166534"];
+  Error  [label=<<b>Error</b><br/><i>code</i> (e.g. -32601 method not found,<br/>-32042 URL elicitation required)<br/><i>message</i>, optional <i>data</i>>,
+           fillcolor="#fee2e2", color="#991b1b"];
+
+  Msg -> Req;
+  Msg -> Not;
+  Msg -> Res;
+  Res -> Result [label="success"];
+  Res -> Error  [label="failure"];
+
+  // examples
+  ex_req [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9, label=<<b>examples:</b><br align="left"/>tools/call, resources/read,<br align="left"/>sampling/createMessage,<br align="left"/>elicitation/create, tasks/get<br align="left"/>>];
+  ex_not [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9, label=<<b>examples:</b><br align="left"/>notifications/initialized,<br align="left"/>notifications/progress,<br align="left"/>notifications/cancelled,<br align="left"/>notifications/tools/list_changed,<br align="left"/>notifications/tasks/status<br align="left"/>>];
+
+  Req -> ex_req [style=dashed, color="#94a3b8", arrowhead=none];
+  Not -> ex_not [style=dashed, color="#94a3b8", arrowhead=none];
+
+  {rank=same; Req; Not; Res}
+}
