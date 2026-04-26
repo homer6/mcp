@@ -4,13 +4,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository purpose
 
-This is a knowledge / documentation repository about the **Model Context Protocol (MCP)**. It is not a software project — there is no build, lint, or test pipeline. The work here is:
+This is a **bridge repo** about the **Model Context Protocol (MCP)**. It is a knowledge / documentation repository, not a software project — there is no build, lint, or test pipeline. The work here is:
 
 - Exploring the MCP protocol in depth
 - Writing long-form explainers and examples in Markdown under `docs/`
 - Authoring Graphviz `.dot` source files for diagrams, rendering them to PNG, and embedding the rendered images in the corresponding Markdown
 
 When asked to "document X" or "explain Y" about MCP, the deliverable is almost always a new or updated Markdown file in `docs/`, optionally accompanied by one or more diagrams.
+
+## Bridge repo concept
+
+This repo is a **bridge repo**: it bridges multiple upstream repositories into a single working whole, alongside our own original docs. Upstream sources live as **git submodules** under `modules/`, one directory per upstream repo. This lets us:
+
+- Keep upstream source-of-truth (specs, SDKs, reference servers) pinned at known commits and visible in this checkout.
+- Cross-reference upstream files from our own `docs/` Markdown without copying or paraphrasing.
+- Update each module independently when the upstream advances.
+
+### Working with modules
+
+- After cloning this repo fresh, populate the modules with: `git submodule update --init --recursive`
+- Add a new module with: `git submodule add <repo-url> modules/<name>` — pick `<name>` to match the upstream repo name (no nesting under org names unless disambiguation requires it).
+- Update a module to its upstream tip: `git -C modules/<name> fetch && git -C modules/<name> checkout <ref>`, then commit the new submodule pointer from the bridge-repo root.
+- Treat files inside `modules/` as **read-only upstream content**. Do not edit them directly. If something is wrong, fix it upstream or annotate it from our own `docs/`.
+
+### Current modules
+
+| Module | Upstream | Purpose |
+|--------|----------|---------|
+| `modules/modelcontextprotocol` | `github.com/modelcontextprotocol/modelcontextprotocol` | Canonical MCP specification and modelcontextprotocol.io site content |
 
 ## Diagram workflow (Graphviz)
 
