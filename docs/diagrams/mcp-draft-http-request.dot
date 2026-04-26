@@ -1,0 +1,63 @@
+// Streamable HTTP request anatomy in the DRAFT-2026-v1 spec
+// Headers that were OPTIONAL in 2025-11-25 are REQUIRED in the draft (SEP-2243).
+// Servers MUST validate that header values match the body and return
+// -32001 HeaderMismatch on disagreement. Custom Mcp-Param-{Name} headers
+// come from tool inputSchema properties annotated with x-mcp-header.
+digraph mcp_draft_http_request {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Client [label="MCP Client", fillcolor="#dbeafe", color="#1e40af", shape=ellipse];
+  Server [label="MCP Server", fillcolor="#dcfce7", color="#166534", shape=ellipse];
+
+  subgraph cluster_post {
+    label="HTTP POST  /mcp   (Streamable HTTP transport)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#0369a1";
+    fontcolor="#0369a1";
+
+    Headers [shape=plaintext, label=<
+      <table border="1" cellborder="1" cellspacing="0" cellpadding="5">
+        <tr><td colspan="2" bgcolor="#bae6fd"><b>HTTP headers</b></td></tr>
+        <tr><td align="left"><b>Content-Type</b></td><td align="left">application/json</td></tr>
+        <tr><td align="left"><b>Accept</b></td><td align="left">application/json, text/event-stream</td></tr>
+        <tr><td align="left"><b>Mcp-Session-Id</b></td><td align="left">issued by server at initialize</td></tr>
+        <tr><td align="left" bgcolor="#fef3c7"><b>Mcp-Method</b></td><td align="left" bgcolor="#fef3c7"><b>REQUIRED</b>  mirror of body <i>method</i></td></tr>
+        <tr><td align="left" bgcolor="#fef3c7"><b>Mcp-Name</b></td><td align="left" bgcolor="#fef3c7"><b>REQUIRED</b> when applicable<br/>(tools/call, resources/read, prompts/get)<br/>mirror of <i>params.name</i> or <i>params.uri</i></td></tr>
+        <tr><td align="left" bgcolor="#fce7f3"><b>Mcp-Param-Region</b></td><td align="left" bgcolor="#fce7f3">custom — from tool inputSchema with <i>x-mcp-header: "Region"</i></td></tr>
+        <tr><td align="left" bgcolor="#fce7f3"><b>Mcp-Param-Tenant</b></td><td align="left" bgcolor="#fce7f3">custom — opt-in per tool</td></tr>
+        <tr><td align="left"><b>MCP-Protocol-Version</b></td><td align="left">negotiated at initialize</td></tr>
+      </table>
+    >];
+
+    Body [shape=plaintext, label=<
+      <table border="1" cellborder="1" cellspacing="0" cellpadding="5">
+        <tr><td bgcolor="#bae6fd"><b>JSON-RPC body</b></td></tr>
+        <tr><td align="left"><font face="Courier"><br/>{<br/>  "jsonrpc": "2.0",<br/>  "id": 1,<br/>  "method": "tools/call",      ←<br/>  "params": {<br/>    "name": "execute_sql",   ←<br/>    "arguments": {<br/>      "region": "us-west1", ←<br/>      "query": "SELECT 1"<br/>    }<br/>  }<br/>}</font></td></tr>
+      </table>
+    >];
+
+    Headers -> Body [style=invis];
+  }
+
+  Validate [label=<<b>Server validation (REQUIRED)</b><br/>headers must match body values<br/>—— mismatch → HTTP 400<br/>+ JSON-RPC error <b>-32001 HeaderMismatch</b>>,
+             fillcolor="#fee2e2", color="#991b1b"];
+
+  Client -> Headers [label="POST"];
+  Headers -> Server [label="reaches"];
+  Server -> Validate;
+
+  // Encoding note for non-ASCII header values
+  Encoding [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+             label=<<b>non-ASCII / control / whitespace values:</b><br align="left"/>Mcp-Param-Greeting: =?base64?{base64-utf8}?=<br align="left"/>per RFC 9110 visible-ASCII rule<br align="left"/>>];
+  Headers -> Encoding [style=dashed, arrowhead=none, color="#94a3b8"];
+
+  // Routing benefit
+  Bench [shape=note, fillcolor="#f0fdf4", color="#166534", fontsize=9,
+          label=<<b>why headers, not body fields:</b><br align="left"/>load balancers, WAFs, and proxies<br align="left"/>can route MCP traffic without<br align="left"/>terminating TLS or parsing JSON.<br align="left"/>>];
+  Server -> Bench [style=dashed, arrowhead=none, color="#94a3b8"];
+}

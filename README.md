@@ -10,6 +10,7 @@ A bridge repo combines original documentation with upstream source-of-truth, pin
 docs/
   what-is-mcp.md          - introductory explainer for MCP
   mcp-deep-dive.md        - rationale for each part of the schema, SEP-by-SEP
+  mcp-draft-spec.md       - complete walkthrough of the upcoming DRAFT-2026-v1 spec
   what-is-llms-txt.md     - introductory explainer for llms.txt
   llms-txt-deep-dive.md   - design rationale and efficacy critique
   diagrams/               - Graphviz .dot sources + rendered .png
@@ -25,6 +26,7 @@ If you're new to MCP, read in this order:
 
 1. [`docs/what-is-mcp.md`](docs/what-is-mcp.md) — what MCP is, who uses it, and why it exists.
 2. [`docs/mcp-deep-dive.md`](docs/mcp-deep-dive.md) — the schema explained section by section, with diagrams, anchored to the upstream spec and the Spec Enhancement Proposals (SEPs) that introduced each feature.
+3. [`docs/mcp-draft-spec.md`](docs/mcp-draft-spec.md) — what's changing in the upcoming `DRAFT-2026-v1` spec relative to `2025-11-25` (mostly tightening: required HTTP headers, MUST-not-standalone server requests, formalized `extensions` slot).
 
 For `llms.txt`:
 
@@ -44,6 +46,7 @@ All diagrams are Graphviz `.dot` source rendered to PNG. Both files are committe
 | `mcp-task-states` | Task state machine (SEP-1686) |
 | `mcp-sampling-with-tools` | Server-driven agent loop (SEP-1577) |
 | `mcp-elicitation-modes` | Form vs URL elicitation (SEP-1036) plus the `-32042` redirect error |
+| `mcp-draft-http-request` | Anatomy of a `DRAFT-2026-v1` Streamable HTTP request — required headers, validation, custom `Mcp-Param-{Name}` |
 | `llms-txt-anatomy` | The proposed file's required and optional parts |
 | `llms-txt-ecosystem` | Comparison with `robots.txt` / `sitemap.xml` and companion files |
 
