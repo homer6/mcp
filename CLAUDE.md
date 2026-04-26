@@ -33,28 +33,47 @@ This repo is a **bridge repo**: it bridges multiple upstream repositories into a
 |--------|----------|---------|
 | `modules/modelcontextprotocol` | `github.com/modelcontextprotocol/modelcontextprotocol` | Canonical MCP specification and modelcontextprotocol.io site content |
 
+### Upstream module CLAUDE.md auto-loads
+
+When reading files inside `modules/modelcontextprotocol/`, that submodule's own `CLAUDE.md` auto-loads into the conversation. Treat it as the upstream maintainers' guidance for *contributing to their repo* — relevant if you're ever proposing a SEP or PR upstream, but **not** the convention for our bridge-repo docs. Two notable differences:
+
+- **Diagrams**: upstream prefers Mermaid for their internal docs; the bridge repo uses Graphviz. Don't switch tools because the upstream CLAUDE.md says Mermaid.
+- **Commit messages**: upstream forbids mentioning model names; that's their commit policy, not ours.
+
 ## Diagram workflow (Graphviz)
 
 Diagrams are authored as `.dot` source and rendered to PNG, then referenced from Markdown. Always commit both the `.dot` source and the rendered `.png` so the diagram can be re-rendered later without guessing.
 
-Convention to follow when adding diagrams:
+Convention:
 
-- Place `.dot` source alongside the Markdown that uses it, e.g. `docs/diagrams/<name>.dot` with the rendered output at `docs/diagrams/<name>.png`.
+- `.dot` source and `.png` output both live in `docs/diagrams/<name>.{dot,png}`.
 - Render with: `dot -Tpng docs/diagrams/<name>.dot -o docs/diagrams/<name>.png`
-- Embed in the Markdown using a relative path: `![alt text](diagrams/<name>.png)`
-- Graphviz is installed at `/opt/homebrew/bin/dot` (verified `dot -V` → graphviz 14.0.0).
-
-If a directory like `docs/diagrams/` does not yet exist when you add the first diagram, create it.
+- Embed from a doc with: `![alt text](diagrams/<name>.png)` (relative path; docs live in `docs/`).
+- Graphviz is at `/opt/homebrew/bin/dot` (graphviz 14.0.0 verified). To render the whole directory at once: `cd docs/diagrams && for f in *.dot; do dot -Tpng "$f" -o "${f%.dot}.png"; done`.
+- Naming: use a topic prefix (`mcp-*`, `llms-txt-*`) so the directory groups by subject.
+- Keep `.dot` files commented at the top with a one-paragraph rationale — what the diagram is showing and why. Future renders depend on understanding intent.
 
 ## Writing conventions for docs
 
-Existing docs (`docs/what-is-mcp.md`) establish the house style — match it when adding new pages:
+Two doc styles coexist, and new pages should follow whichever is appropriate:
 
-- Long-form, explainer tone with `***` horizontal rules separating major sections.
-- `##` for top-level sections, `###` for subsections.
-- Inline footnote-style citations like `[1][2]` after factual claims sourced from external material. Preserve these when editing; do not strip citation markers.
+### Introductory explainer (`what-is-X.md`)
+
+- Long-form prose, `***` horizontal rules separating major sections, `##`/`###` hierarchy.
+- Inline footnote-style citations like `[1][2]` for facts sourced from external material. **Preserve these when editing; do not strip citation markers.** This style is used by `docs/what-is-mcp.md` and `docs/what-is-llms-txt.md`.
 - Tables for version/spec comparisons.
 - Bold key terms on first introduction.
+
+### Deep-dive companion (`X-deep-dive.md`)
+
+- Pairs with an introductory explainer — link to it from the top, don't duplicate the introduction.
+- **Anchors every load-bearing claim to a file in `modules/<upstream>/`.** Cite by path, with line numbers for schema or with SEP numbers for proposals. Example: `schema.ts:1117–1131`, `SEP-1577`. This is the central trust model: if a claim isn't anchored to upstream, it shouldn't be there.
+- Embeds Graphviz diagrams from `docs/diagrams/`.
+- Each section names the schema interface, methods, and SEPs it covers.
+- A `## References` section at the end listing all upstream paths cited (relative to `modules/<upstream>/`).
+- See `docs/mcp-deep-dive.md` for the canonical example.
+
+The split lets the introductory doc stay readable for first-timers while the deep-dive does the heavy lifting on rationale.
 
 ## MCP domain facts to keep consistent across docs
 
