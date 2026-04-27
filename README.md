@@ -76,7 +76,11 @@ All diagrams are Graphviz `.dot` source rendered to PNG, stored alongside the do
 
 ### .well-known — `docs/topics/well-known/diagrams/`
 
-See [`docs/topics/well-known/well-known-deep-dive.md`](docs/topics/well-known/well-known-deep-dive.md) for the diagram set.
+| Diagram | Topic |
+|---|---|
+| `well-known-anatomy` | URI shape (`/.well-known/<suffix>`) plus IANA registry entry and status tiers (Permanent vs Provisional) |
+| `well-known-mcp-auth-discovery` | MCP's auth discovery chain: 401 → `oauth-protected-resource` (RFC 9728) → `oauth-authorization-server` (RFC 8414) → token request |
+| `well-known-vs-llms-txt` | Why `llms.txt` is *not* a well-known URI, and what would change if it were |
 
 Render every diagram in the repo:
 
