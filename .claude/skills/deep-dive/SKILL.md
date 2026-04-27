@@ -99,7 +99,7 @@ Style notes from the established diagrams:
 ### Step 5 — Render
 
 ```bash
-cd docs/diagrams
+cd docs/topics/<topic>/diagrams
 for f in *.dot; do dot -Tpng "$f" -o "${f%.dot}.png"; done
 ```
 
@@ -109,7 +109,7 @@ Both `.dot` and `.png` are committed — the source so it can be re-rendered, th
 
 ### Step 6 — Write the deep-dive doc
 
-Create `docs/<topic>-deep-dive.md` following this structure:
+Create `docs/topics/<topic>/<topic>-deep-dive.md` following this structure:
 
 ```
 # <Topic> Deep Dive: <punchy subtitle>
@@ -118,7 +118,8 @@ This is the companion to [`what-is-<topic>.md`](what-is-<topic>.md). The introdu
 tells you *what*. This document explains *why* — design rationale, the problems each
 piece solves, and the tradeoffs the maintainers chose.
 
-Every claim here is anchored to a file in `modules/<upstream>/`. ...
+Every claim here is anchored to a file in `modules/<upstream>/` or to a normative
+external standard (RFC, SEP). ...
 
 ***
 
@@ -132,28 +133,30 @@ Every claim here is anchored to a file in `modules/<upstream>/`. ...
 
 ![alt text](diagrams/<topic>-<name>.png)
 
-[Prose anchored to upstream paths. Use direct quotes (verbatim, in blockquote) from
-schema doc-comments and SEP motivation sections for any non-obvious design rationale.]
+[Prose anchored to upstream paths or RFCs. Use direct quotes (verbatim, in blockquote)
+from schema doc-comments, SEP motivation sections, and RFC text for any non-obvious
+design rationale.]
 
 [Reference schema interfaces by path:line, e.g. `schema.ts:1117–1131`.]
 [Reference SEPs by number, e.g. **SEP-1577**.]
+[Reference RFCs by number, e.g. **RFC 8615**.]
 
 ***
 
 ## N. References
 
-All paths relative to `modules/<upstream>/`.
-
-- **Schema (source of truth)**: `schema/<latest>/schema.ts`
-- ...
+- **Upstream**: paths relative to `modules/<upstream>/` — `schema/<latest>/schema.ts`, etc.
+- **Standards**: RFC numbers and short titles
+- **Cross-references in this repo**: links to other deep-dives or intros under `../<other-topic>/`
 ```
 
 **Citation rules** (this is the load-bearing trust model):
 
-- Every load-bearing factual claim cites either a file path (with line numbers when useful) or a SEP number.
-- Quotes from the spec or SEPs are verbatim and in blockquote — don't paraphrase rationale you can quote.
-- The final `## References` section lists every upstream file path cited, relative to `modules/<upstream>/`. This is non-optional.
+- Every load-bearing factual claim cites a file path (with line numbers when useful), a SEP number, or a normative external standard (e.g., RFC).
+- Quotes from the spec, SEPs, or RFCs are verbatim and in blockquote — don't paraphrase rationale you can quote.
+- The final `## References` section lists every upstream file path and external standard cited. This is non-optional.
 - If a claim can't be anchored, either find a source or remove it. Don't invent.
+- For topics without a submodule (e.g., `.well-known/` is governed by IANA + RFCs, not a single GitHub repo), anchor primarily to RFCs and the IANA registry; cross-reference to `modules/<upstream>/` files where the topic intersects an existing submodule.
 
 **Style** matches the existing deep-dives:
 
@@ -167,12 +170,14 @@ All paths relative to `modules/<upstream>/`.
 
 Add the new doc to `README.md` in two places:
 
-1. The repo layout block (`docs/<topic>-deep-dive.md` line).
-2. The "Reading order" section, with a one-line summary.
+1. The repo layout block (the line for the topic's `<topic>-deep-dive.md`).
+2. The "Reading order" section, with a one-line summary under the topic's heading.
 
-Add each new diagram to the Diagrams table in `README.md`.
+Add each new diagram to the topic's Diagrams table in `README.md` (one section per topic).
 
-If `CLAUDE.md` doesn't yet mention the topic and the deep-dive establishes new domain facts that future docs should respect, also add a bullet to the "MCP domain facts" section (or the analogous facts section for non-MCP topics).
+If the topic is brand new (didn't exist before), also create the topic's Reading-order block and Diagrams subsection in `README.md` from scratch.
+
+If `CLAUDE.md` doesn't yet mention the topic and the deep-dive establishes new domain facts that future docs should respect, also add a bullet to the "domain facts" section (or analogous).
 
 ### Step 8 — Don't commit unless asked
 
@@ -182,11 +187,12 @@ Stop here. Surface a summary of what was created. Do **not** create a git commit
 
 The canonical references (read these to absorb tone and structure):
 
-- `docs/mcp-deep-dive.md` (393 lines) — the flagship example. Eleven sections, six diagrams, every section tied to schema lines and SEPs.
-- `docs/mcp-draft-spec.md` (~270 lines) — a *delta* deep-dive comparing draft vs latest stable; demonstrates the at-a-glance change table and the "what did *not* change" section.
-- `docs/llms-txt-deep-dive.md` (137 lines) — a smaller deep-dive for a topic without a submodule. Note it includes an explicit "X is not Y" section to head off conflation with related concepts.
+- `docs/topics/mcp/mcp-deep-dive.md` — the flagship example. Eleven sections, six diagrams, every section tied to schema lines and SEPs.
+- `docs/topics/mcp/mcp-draft-spec.md` — a *delta* deep-dive comparing draft vs latest stable; demonstrates the at-a-glance change table and the "what did *not* change" section.
+- `docs/topics/llms-txt/llms-txt-deep-dive.md` — a smaller deep-dive for a topic without a submodule. Note it includes an explicit "X is not Y" section to head off conflation with related concepts.
+- `docs/topics/well-known/well-known-deep-dive.md` — deep-dive for a standards-rooted topic; primarily cites RFCs and the IANA registry, with cross-references to `mcp-deep-dive.md` § auth where MCP uses well-known endpoints.
 
-Diagrams to study before authoring new ones: `docs/diagrams/mcp-architecture.dot`, `docs/diagrams/mcp-task-states.dot`, `docs/diagrams/mcp-sampling-with-tools.dot`. They demonstrate clusters, color coding, HTML-label tables, and sidebar notes respectively.
+Diagrams to study before authoring new ones: `docs/topics/mcp/diagrams/mcp-architecture.dot`, `docs/topics/mcp/diagrams/mcp-task-states.dot`, `docs/topics/mcp/diagrams/mcp-sampling-with-tools.dot`. They demonstrate clusters, color coding, HTML-label tables, and sidebar notes respectively.
 
 ## Common pitfalls
 
@@ -209,7 +215,7 @@ Diagrams to study before authoring new ones: `docs/diagrams/mcp-architecture.dot
 ## Quick reference: file layout produced
 
 ```
-docs/
+docs/topics/<topic>/
   <topic>-deep-dive.md            (new)
   diagrams/
     <topic>-<concept-1>.dot       (new)
@@ -220,3 +226,5 @@ docs/
 README.md                          (updated: index + diagrams table)
 CLAUDE.md                          (updated only if new domain facts emerged)
 ```
+
+If the topic is brand new, also create `docs/topics/<topic>/` and `docs/topics/<topic>/diagrams/` themselves. If `what-is-<topic>.md` doesn't exist yet, decide with the user whether to author the introduction first or skip straight to the deep-dive.
