@@ -1,0 +1,84 @@
+// Claude Managed Agents bidirectional event model.
+// Type strings follow {domain}.{action}. User events flow IN, agent +
+// session + span events flow OUT. Every event has a processed_at timestamp;
+// null means it's queued behind preceding events.
+digraph managed_agents_event_model {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Client [label="Your application", fillcolor="#dbeafe", color="#1e40af", shape=ellipse];
+  Session [label="Session", fillcolor="#fef3c7", color="#b45309", shape=ellipse];
+
+  subgraph cluster_user {
+    label="User events  (client → session)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#1e40af";
+    fontcolor="#1e40af";
+
+    UMsg   [label=<<b>user.message</b><br/>text content blocks>,                  fillcolor="#dbeafe", color="#1e40af"];
+    UInt   [label=<<b>user.interrupt</b><br/>stop mid-execution>,                 fillcolor="#dbeafe", color="#1e40af"];
+    UCust  [label=<<b>user.custom_tool_result</b><br/>respond to custom tool>,    fillcolor="#dbeafe", color="#1e40af"];
+    UConf  [label=<<b>user.tool_confirmation</b><br/>approve/deny tool call>,     fillcolor="#dbeafe", color="#1e40af"];
+    UOut   [label=<<b>user.define_outcome</b><br/>(research preview)>,            fillcolor="#dbeafe", color="#1e40af"];
+  }
+
+  subgraph cluster_agent {
+    label="Agent events  (session → client)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#166534";
+    fontcolor="#166534";
+
+    AMsg   [label=<<b>agent.message</b><br/>text response>,                       fillcolor="#dcfce7", color="#166534"];
+    AThk   [label=<<b>agent.thinking</b><br/>extended thinking>,                  fillcolor="#dcfce7", color="#166534"];
+    AT     [label=<<b>agent.tool_use</b><br/>built-in tool invocation>,           fillcolor="#dcfce7", color="#166534"];
+    ATR    [label=<<b>agent.tool_result</b><br/>built-in tool result>,            fillcolor="#dcfce7", color="#166534"];
+    AMcp   [label=<<b>agent.mcp_tool_use</b><br/>MCP tool invocation>,            fillcolor="#dcfce7", color="#166534"];
+    AMcpR  [label=<<b>agent.mcp_tool_result</b>>,                                 fillcolor="#dcfce7", color="#166534"];
+    AC     [label=<<b>agent.custom_tool_use</b><br/>your custom tool>,            fillcolor="#dcfce7", color="#166534"];
+    ACPC   [label=<<b>agent.thread_context_compacted</b><br/>history compacted to fit context>, fillcolor="#dcfce7", color="#166534"];
+  }
+
+  subgraph cluster_obs {
+    label="Session + span events  (observability)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#b45309";
+    fontcolor="#b45309";
+
+    SR     [label=<<b>session.status_running</b>>,                                fillcolor="#fef3c7", color="#b45309"];
+    SI     [label=<<b>session.status_idle</b><br/>+ stop_reason>,                 fillcolor="#fef3c7", color="#b45309"];
+    SRsc   [label=<<b>session.status_rescheduled</b><br/>transient retry>,        fillcolor="#fef3c7", color="#b45309"];
+    ST     [label=<<b>session.status_terminated</b>>,                             fillcolor="#fef3c7", color="#b45309"];
+    SE     [label=<<b>session.error</b><br/>typed error + retry_status>,          fillcolor="#fee2e2", color="#991b1b"];
+    SSpan  [label=<<b>span.model_request_*</b><br/>start/end + token usage>,      fillcolor="#fef9c3", color="#a16207"];
+  }
+
+  Client -> UMsg   [arrowhead=none, color="#94a3b8"];
+  Client -> UInt   [arrowhead=none, color="#94a3b8"];
+  Client -> UCust  [arrowhead=none, color="#94a3b8"];
+  Client -> UConf  [arrowhead=none, color="#94a3b8"];
+  Client -> UOut   [arrowhead=none, color="#94a3b8", style=dashed];
+
+  UMsg   -> Session;
+  UInt   -> Session;
+  UCust  -> Session;
+  UConf  -> Session;
+  UOut   -> Session [style=dashed];
+
+  Session -> AMsg [arrowhead=none, color="#94a3b8"];
+  Session -> AC   [arrowhead=none, color="#94a3b8"];
+  Session -> SR   [arrowhead=none, color="#94a3b8"];
+
+  // custom-tool round-trip
+  AC -> UCust [label="paired with", style=dashed, color="#9d174d", constraint=false];
+
+  // multiagent reference
+  multi [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+          label=<<b>multi-agent (research preview):</b><br align="left"/>agent.thread_message_sent /<br align="left"/>agent.thread_message_received,<br align="left"/>session.thread_created / session.thread_idle<br align="left"/>>];
+  Session -> multi [style=dashed, arrowhead=none, color="#94a3b8"];
+}

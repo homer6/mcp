@@ -1,0 +1,77 @@
+// Where Managed Agents fits in the Anthropic / Claude Code automation surface.
+// Three different products at three different abstraction levels: Messages
+// API (build the loop yourself), Managed Agents (loop + tools + sandbox),
+// Routines (the loop ALSO triggered + scheduled by us).
+digraph managed_agents_vs_messages {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+
+  cmp [shape=plaintext, label=<
+    <table border="1" cellborder="1" cellspacing="0" cellpadding="6">
+      <tr>
+        <td bgcolor="#cbd5e1"><b>dimension</b></td>
+        <td bgcolor="#dbeafe"><b>Messages API</b></td>
+        <td bgcolor="#dcfce7"><b>Claude Managed Agents</b></td>
+        <td bgcolor="#fef3c7"><b>Claude Code Routines</b></td>
+        <td bgcolor="#fce7f3"><b>Claude Code Web</b></td>
+      </tr>
+      <tr><td><b>abstraction level</b></td>
+          <td>raw model prompting</td>
+          <td>hosted agent harness + sandbox</td>
+          <td>scheduled cloud Claude Code session</td>
+          <td>interactive cloud Claude Code session</td></tr>
+      <tr><td><b>who builds the loop</b></td>
+          <td>you</td>
+          <td>Anthropic</td>
+          <td>Anthropic (Claude Code)</td>
+          <td>Anthropic (Claude Code)</td></tr>
+      <tr><td><b>where it runs</b></td>
+          <td>your infrastructure</td>
+          <td>Anthropic-managed container</td>
+          <td>Anthropic cloud (Claude Code env)</td>
+          <td>Anthropic cloud (Claude Code env)</td></tr>
+      <tr><td><b>tools provided</b></td>
+          <td>you wire them up</td>
+          <td>bash, file ops, web search/fetch + MCP + custom</td>
+          <td>full Claude Code surface + MCP connectors</td>
+          <td>full Claude Code surface + MCP connectors</td></tr>
+      <tr><td><b>persistence</b></td>
+          <td>you manage</td>
+          <td>session conversation history + file system + memory stores</td>
+          <td>each run = new session in your list</td>
+          <td>session list, like routines</td></tr>
+      <tr><td><b>steering mid-run</b></td>
+          <td>request-scoped only</td>
+          <td>user.message + user.interrupt events at any time</td>
+          <td>none — fully autonomous</td>
+          <td>interactive — full control</td></tr>
+      <tr><td><b>identity model</b></td>
+          <td>your API key</td>
+          <td>your API key + per-session vault for MCP OAuth</td>
+          <td>your claude.ai account (commits as your GitHub user)</td>
+          <td>your claude.ai account</td></tr>
+      <tr><td><b>trigger model</b></td>
+          <td>you call when ready</td>
+          <td>you call when ready (long-lived sessions)</td>
+          <td>schedule + API + GitHub events</td>
+          <td>you open a session</td></tr>
+      <tr><td><b>billing</b></td>
+          <td>API token usage</td>
+          <td>API token usage (built-in tools metered)</td>
+          <td>subscription + daily routine cap</td>
+          <td>subscription</td></tr>
+      <tr><td><b>good for</b></td>
+          <td>fine-grained control, custom orchestration</td>
+          <td>long-running async work, no sandbox to run yourself</td>
+          <td>unattended scheduled or event-driven work</td>
+          <td>interactive coding sessions in browser</td></tr>
+    </table>
+  >];
+
+  legend [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+           label=<<b>rule of thumb:</b><br align="left"/>need full control of the loop → Messages API.<br align="left"/>need a sandboxed agent runtime without building one → Managed Agents.<br align="left"/>need it scheduled or event-driven, working with a repo → Routines.<br align="left"/>need to coordinate interactively from the browser → Claude Code on the web.<br align="left"/>>];
+
+  cmp -> legend [style=invis];
+}

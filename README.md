@@ -1,6 +1,6 @@
 # mcp
 
-A **bridge repo** for exploring the **Model Context Protocol (MCP)** in depth, the adjacent `llms.txt` proposal, the underlying `.well-known/` web standard, and **Claude Code Routines** (cloud-scheduled autonomous Claude Code sessions).
+A **bridge repo** for exploring the **Model Context Protocol (MCP)** in depth, the adjacent `llms.txt` proposal, the underlying `.well-known/` web standard, **Claude Code Routines** (cloud-scheduled autonomous Claude Code sessions), and **Claude Managed Agents** (the Anthropic Platform's hosted agent harness).
 
 A bridge repo combines original documentation with upstream source-of-truth, pinned as git submodules under `modules/`, so every claim in our docs can be traced back to a specific file in the upstream spec rather than paraphrased from secondary sources.
 
@@ -25,6 +25,10 @@ docs/
     routines/
       what-is-routines.md    - introductory explainer for Claude Code Routines
       routines-deep-dive.md  - design rationale, trigger model, autonomy & safety choices
+      diagrams/
+    managed-agents/
+      what-is-managed-agents.md   - introductory explainer for Claude Managed Agents
+      managed-agents-deep-dive.md - 4-resource model, event stream, persistence, comparison with adjacent products
       diagrams/
 modules/
   modelcontextprotocol/      - submodule: github.com/modelcontextprotocol/modelcontextprotocol
@@ -58,6 +62,11 @@ Each topic gets its own subdirectory under `docs/topics/`. The directory layout 
 
 1. [`docs/topics/routines/what-is-routines.md`](docs/topics/routines/what-is-routines.md)
 2. [`docs/topics/routines/routines-deep-dive.md`](docs/topics/routines/routines-deep-dive.md) — trigger model, execution autonomy, billing carve-outs, and how routines compare to `/loop`, Desktop scheduled tasks, and GitHub Actions.
+
+**Managed Agents** (Anthropic Platform's hosted agent harness):
+
+1. [`docs/topics/managed-agents/what-is-managed-agents.md`](docs/topics/managed-agents/what-is-managed-agents.md)
+2. [`docs/topics/managed-agents/managed-agents-deep-dive.md`](docs/topics/managed-agents/managed-agents-deep-dive.md) — the four-resource model (Agent / Environment / Session / Events), bidirectional event stream, vaults for MCP OAuth, persistence model, and comparison with the Messages API, Routines, and Claude Code on the web.
 
 ## Diagrams
 
@@ -98,6 +107,15 @@ All diagrams are Graphviz `.dot` source rendered to PNG, stored alongside the do
 | `routines-trigger-model` | Three composable trigger types (Schedule / API / GitHub) attached to one saved routine config |
 | `routines-execution-flow` | What happens when a trigger fires: cap check → cloud env → repo clone → autonomous session → branch policy → session record |
 | `routines-vs-similar` | Comparison matrix: Routines vs Desktop scheduled tasks vs `/loop` vs GitHub Actions |
+
+### Managed Agents — `docs/topics/managed-agents/diagrams/`
+
+| Diagram | Topic |
+|---|---|
+| `managed-agents-architecture` | Four-resource model (Agent / Environment / Session / Events) plus independent resources (Files, Memory, Vaults) |
+| `managed-agents-event-model` | Bidirectional `{domain}.{action}` event taxonomy: user / agent / session / span events |
+| `managed-agents-session-states` | Session state machine: `idle` ↔ `running`, `rescheduling`, `terminated`, plus archive/delete |
+| `managed-agents-vs-messages` | Comparison matrix: Managed Agents vs Messages API vs Routines vs Claude Code on the web |
 
 Render every diagram in the repo:
 

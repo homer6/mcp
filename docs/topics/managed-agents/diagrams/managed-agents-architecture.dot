@@ -1,0 +1,63 @@
+// Claude Managed Agents core resource model.
+// Three independent resources — Agent, Environment, Session — compose to
+// run an autonomous agent. Agents are versioned. Environments hold the
+// container template. Sessions reference one of each. Files, memory stores,
+// and vaults are independent of session lifetime.
+digraph managed_agents_architecture {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Client [label="Your application\n(SDK or HTTP)", fillcolor="#dbeafe", color="#1e40af", shape=ellipse];
+
+  subgraph cluster_resources {
+    label="Anthropic-managed resources";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#0369a1";
+    fontcolor="#0369a1";
+
+    Agent [label=<<b>Agent</b>  (versioned)<br/>model + system prompt<br/>+ tools (built-in subset)<br/>+ MCP servers<br/>+ skills<br/><font point-size="9"><i>reference by id (latest version)<br/>or pin via {id, version}</i></font>>,
+            fillcolor="#dcfce7", color="#166534"];
+
+    Env   [label=<<b>Environment</b><br/>cloud container template<br/>+ pre-installed packages<br/>(Python, Node.js, Go, ...)<br/>+ network access rules<br/>+ mounted files>,
+            fillcolor="#dbeafe", color="#1e40af"];
+
+    Session [label=<<b>Session</b>  (running instance)<br/>references 1 Agent + 1 Environment<br/>+ optional vault_ids<br/>maintains conversation history<br/>+ persistent file system<br/><font point-size="9">status: idle / running /<br/>rescheduling / terminated</font>>,
+              fillcolor="#fef3c7", color="#b45309"];
+  }
+
+  subgraph cluster_indep {
+    label="Independent resources  (survive session lifecycle)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#9d174d";
+    fontcolor="#9d174d";
+
+    Files  [label=<<b>Files</b><br/>shared file storage>,
+             fillcolor="#fce7f3", color="#9d174d"];
+    Memory [label=<<b>Memory stores</b><br/>cross-session memory>,
+             fillcolor="#fce7f3", color="#9d174d"];
+    Vault  [label=<<b>Vaults</b><br/>OAuth credentials for MCP<br/>Anthropic refreshes tokens>,
+             fillcolor="#fce7f3", color="#9d174d"];
+  }
+
+  Client -> Agent  [label="create / version"];
+  Client -> Env    [label="configure"];
+  Client -> Session [label="start  (agent + environment_id)"];
+  Session -> Agent  [label="references", style=dashed];
+  Session -> Env    [label="references", style=dashed];
+  Session -> Vault  [label="vault_ids", style=dashed];
+
+  // independence note
+  ind [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+        label=<<b>session deletion does not remove:</b><br align="left"/>files, memory stores, environments, agents, vaults<br align="left"/>(running sessions cannot be deleted — interrupt first)<br align="left"/>>];
+  Session -> ind [style=dashed, arrowhead=none, color="#94a3b8"];
+
+  // beta header
+  beta [shape=note, fillcolor="#fef3c7", color="#b45309", fontsize=9,
+         label=<<b>research preview:</b><br align="left"/>all endpoints require beta header<br align="left"/>anthropic-beta: managed-agents-2026-04-01<br align="left"/>SDK sets it automatically.<br align="left"/>>];
+  Client -> beta [style=dashed, arrowhead=none, color="#94a3b8"];
+}

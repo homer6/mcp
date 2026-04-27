@@ -1,0 +1,47 @@
+// Session state machine for Claude Managed Agents.
+// Sessions start idle (provisioned but no work). Sending a user.message
+// drives idle→running. Transient errors trigger rescheduling and retry.
+// Unrecoverable errors terminate. Archive preserves history but stops
+// new events. Delete removes the session, its events, and its container.
+digraph managed_agents_session_states {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  splines=true;
+  nodesep=0.6;
+  ranksep=0.9;
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569", minlen=2];
+
+  Created [label="POST /v1/sessions\n(agent + environment_id)\n→ provisions container,\n  no work yet",
+            fillcolor="#e0f2fe", color="#0369a1"];
+
+  Idle [label=<<b>idle</b><br/>waiting for input<br/>(or tool confirmation)>,
+         fillcolor="#fef3c7", color="#b45309"];
+  Running [label=<<b>running</b><br/>actively processing<br/>tools / model calls>,
+            fillcolor="#dcfce7", color="#166534"];
+  Resched [label=<<b>rescheduling</b><br/>transient error<br/>retrying automatically>,
+            fillcolor="#fce7f3", color="#9d174d"];
+  Term [label=<<b>terminated</b><br/>unrecoverable error<br/>(stop_reason in idle event)>,
+         fillcolor="#fee2e2", color="#991b1b", shape=doublecircle, style="filled"];
+
+  Archived [label=<<b>archived</b><br/>history preserved<br/>no new events accepted>,
+             fillcolor="#f1f5f9", color="#475569", shape=doublecircle, style="filled"];
+  Deleted [label=<<b>deleted</b><br/>session record + events<br/>+ container removed<br/>(running cannot be deleted —<br/>interrupt first)>,
+            fillcolor="#fee2e2", color="#991b1b", shape=doublecircle, style="filled"];
+
+  Created -> Idle;
+  Idle    -> Running [taillabel="user.message →", headlabel="← stop_reason\n← user.interrupt", labeldistance=3, labelfontsize=10, dir=both];
+  Running -> Resched [taillabel="transient error →", headlabel="← retry succeeds", labeldistance=2.5, labelfontsize=10, dir=both];
+  Running -> Term    [label="unrecoverable error"];
+  Idle    -> Archived [label="POST /archive"];
+  Idle    -> Deleted  [label="DELETE"];
+  Term    -> Deleted  [label="DELETE"];
+
+  // observability note
+  obs [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+        label=<<b>state changes are also event types:</b><br align="left"/>session.status_running, session.status_idle,<br align="left"/>session.status_rescheduled, session.status_terminated.<br align="left"/>Plus span.model_request_start/end with token counts<br align="left"/>and session.error with retry_status.<br align="left"/>>];
+  Resched -> obs [style=dashed, arrowhead=none, color="#94a3b8"];
+
+  {rank=same; Idle Running Resched}
+}
