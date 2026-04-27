@@ -1,0 +1,68 @@
+// Why llms.txt is NOT a well-known URI — and what would change if it were.
+// llms.txt sits at the site root (/llms.txt), not under /.well-known/.
+// This was a deliberate (or at least uncontested) choice by Howard, but it
+// has consequences for governance, discoverability, and trust.
+digraph well_known_vs_llms_txt {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Site [label="Origin\n/", fillcolor="#e0f2fe", color="#0369a1", shape=ellipse];
+
+  subgraph cluster_well {
+    label="under /.well-known/  (IANA-registered, RFC 8615)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#166534";
+    fontcolor="#166534";
+
+    Sec   [label=<<b>security.txt</b><br/>RFC 9116<br/>permanent>,
+            fillcolor="#dcfce7", color="#166534"];
+    OIDC  [label=<<b>openid-configuration</b><br/>OpenID Connect Discovery<br/>permanent>,
+            fillcolor="#dcfce7", color="#166534"];
+    OAuth [label=<<b>oauth-protected-resource</b><br/>RFC 9728<br/>permanent — used by MCP>,
+            fillcolor="#dcfce7", color="#166534"];
+    ACME  [label=<<b>acme-challenge</b><br/>RFC 8555<br/>permanent — used by Let's Encrypt>,
+            fillcolor="#dcfce7", color="#166534"];
+  }
+
+  subgraph cluster_root {
+    label="at site root, NOT under /.well-known/";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#9d174d";
+    fontcolor="#9d174d";
+
+    Robots  [label=<<b>/robots.txt</b><br/>predates RFC 8615<br/>(later RFC 9309)>,
+              fillcolor="#fce7f3", color="#9d174d"];
+    Sitemap [label=<<b>/sitemap.xml</b><br/>predates RFC 8615<br/>convention only>,
+              fillcolor="#fce7f3", color="#9d174d"];
+    LLMS    [label=<<b>/llms.txt</b><br/>proposed Sept 2024<br/>NOT IANA-registered<br/>NOT formally adopted>,
+              fillcolor="#fbcfe8", color="#9d174d"];
+  }
+
+  Site -> Sec;
+  Site -> OIDC;
+  Site -> OAuth;
+  Site -> ACME;
+  Site -> Robots [style=dashed];
+  Site -> Sitemap [style=dashed];
+  Site -> LLMS [style=dashed];
+
+  // What would change
+  whatif [shape=plaintext, label=<
+    <table border="1" cellborder="1" cellspacing="0" cellpadding="6">
+      <tr><td colspan="2" bgcolor="#bae6fd"><b>If llms.txt moved to /.well-known/llms.txt</b></td></tr>
+      <tr><td align="left"><b>governance</b></td>     <td align="left">IANA review, "Specification Required" — defining doc, change controller, status tier</td></tr>
+      <tr><td align="left"><b>credibility</b></td>    <td align="left">implies AI platforms have a registered place to look — easier to formally adopt</td></tr>
+      <tr><td align="left"><b>compatibility</b></td>  <td align="left">existing 844k+ sites would need to migrate or dual-host</td></tr>
+      <tr><td align="left"><b>discoverability</b></td><td align="left">grouped with other AI/ML metadata if such suffixes were added</td></tr>
+      <tr><td align="left"><b>legitimacy gap</b></td> <td align="left">closes the "no AI platform endorses it" criticism — at least in protocol form</td></tr>
+    </table>
+  >];
+
+  Site -> whatif [style=invis];
+  {rank=sink; whatif}
+}

@@ -1,0 +1,85 @@
+// Anatomy of a well-known URI (RFC 8615) and its IANA registry entry.
+// The standard fixes the path prefix /.well-known/ and delegates everything
+// after it to a registry — each suffix has a defining specification, a
+// change controller, and a stability tier (permanent vs provisional).
+digraph well_known_anatomy {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Origin [label="Origin\nhttps://example.com",
+           fillcolor="#dbeafe", color="#1e40af", shape=ellipse];
+
+  subgraph cluster_uri {
+    label="The well-known URI shape";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#0369a1";
+    fontcolor="#0369a1";
+
+    Shape [shape=plaintext, label=<
+      <table border="1" cellborder="1" cellspacing="0" cellpadding="6">
+        <tr>
+          <td bgcolor="#dbeafe"><b>scheme</b></td>
+          <td bgcolor="#e0f2fe"><b>authority</b></td>
+          <td bgcolor="#fef3c7"><b>fixed prefix</b></td>
+          <td bgcolor="#fce7f3"><b>registered suffix</b></td>
+        </tr>
+        <tr>
+          <td><font face="Courier">https://</font></td>
+          <td><font face="Courier">example.com</font></td>
+          <td><font face="Courier">/.well-known/</font></td>
+          <td><font face="Courier">openid-configuration</font></td>
+        </tr>
+        <tr>
+          <td colspan="4"><font point-size="9"><i>only at origin root — /blog/.well-known/foo is NOT a well-known URI</i></font></td>
+        </tr>
+      </table>
+    >];
+  }
+
+  subgraph cluster_reg {
+    label="IANA registry entry  (every suffix has one)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#166534";
+    fontcolor="#166534";
+
+    Reg [shape=plaintext, label=<
+      <table border="1" cellborder="1" cellspacing="0" cellpadding="5">
+        <tr><td bgcolor="#dcfce7" colspan="2"><b>example: openid-configuration</b></td></tr>
+        <tr><td align="left"><b>URI suffix</b></td>           <td align="left"><font face="Courier">openid-configuration</font></td></tr>
+        <tr><td align="left"><b>Defining spec</b></td>        <td align="left">OpenID Connect Discovery 1.0</td></tr>
+        <tr><td align="left"><b>Change controller</b></td>    <td align="left">OpenID Foundation</td></tr>
+        <tr><td align="left"><b>Status</b></td>               <td align="left" bgcolor="#bbf7d0"><b>Permanent</b></td></tr>
+        <tr><td align="left"><b>Reference</b></td>            <td align="left">RFC published / WG-maintained</td></tr>
+        <tr><td align="left"><b>Resource scheme(s)</b></td>   <td align="left">https (and others if declared)</td></tr>
+      </table>
+    >];
+  }
+
+  subgraph cluster_status {
+    label="Status tiers";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#b45309";
+    fontcolor="#b45309";
+
+    Perm [label=<<b>Permanent</b><br/>stable specification,<br/>widely implemented,<br/>not removable without<br/>obsoleting RFC>,
+           fillcolor="#fef3c7", color="#b45309"];
+    Prov [label=<<b>Provisional</b><br/>less established,<br/>may be removed if<br/>unused or superseded>,
+           fillcolor="#fde68a", color="#a16207"];
+  }
+
+  Origin -> Shape [label="GET request"];
+  Shape  -> Reg   [label="suffix must be registered", style=dashed];
+  Reg    -> Perm  [style=dotted, arrowhead=none, color="#94a3b8"];
+  Reg    -> Prov  [style=dotted, arrowhead=none, color="#94a3b8"];
+
+  // governance note
+  gov [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+        label=<<b>governance:</b><br align="left"/>"Specification Required" review by IANA-designated experts<br align="left"/>(currently Mark Nottingham). Adding a suffix needs a defining<br align="left"/>spec, change controller, and status tier choice.<br align="left"/>>];
+  Reg -> gov [style=dashed, arrowhead=none, color="#94a3b8"];
+}

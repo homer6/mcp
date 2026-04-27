@@ -1,0 +1,54 @@
+// MCP's auth discovery chain via two .well-known/ URIs.
+// SEP-985 lets clients fall back to a well-known URI when the
+// WWW-Authenticate header is missing. The chain bridges from "unauth'd
+// MCP request" through Protected Resource Metadata (RFC 9728) to
+// Authorization Server Metadata (RFC 8414) and finally to a token request.
+digraph well_known_mcp_auth_discovery {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Client [label="MCP Client", fillcolor="#dbeafe", color="#1e40af", shape=ellipse];
+  Server [label="MCP Server\n(OAuth 2.0 Resource Server)", fillcolor="#dcfce7", color="#166534", shape=ellipse];
+  AS     [label="Authorization Server\n(Auth0, Okta, enterprise IdP, ...)", fillcolor="#fef3c7", color="#b45309", shape=ellipse];
+
+  Step1 [label=<<b>1.</b> POST /mcp  (no token)<br/>or token rejected>,
+          fillcolor="#f0fdf4", color="#166534"];
+  Step2 [label=<<b>2.</b> server returns 401<br/>WWW-Authenticate: Bearer realm="...",<br/>resource_metadata="https://srv/.well-known/oauth-protected-resource">,
+          fillcolor="#f0fdf4", color="#166534"];
+  Fallback [label=<<b>2'.</b> SEP-985 fallback:<br/>if header missing,<br/>GET https://srv<b>/.well-known/oauth-protected-resource</b><br/>(RFC 9728)>,
+             fillcolor="#fef3c7", color="#b45309"];
+  Step3 [label=<<b>3.</b> Protected Resource Metadata JSON<br/>{ "authorization_servers": [<br/>  "https://as.example.com"<br/>], "scopes_supported": [...] }>,
+          fillcolor="#eff6ff", color="#1e40af"];
+  Step4 [label=<<b>4.</b> GET https://as.example.com<b>/.well-known/oauth-authorization-server</b><br/>(RFC 8414)>,
+          fillcolor="#fef9c3", color="#a16207"];
+  Step5 [label=<<b>5.</b> Authorization Server Metadata JSON<br/>{ "authorization_endpoint": "...",<br/>  "token_endpoint": "...",<br/>  "registration_endpoint": "...",<br/>  "grant_types_supported": [...] }>,
+          fillcolor="#fef9c3", color="#a16207"];
+  Step6 [label=<<b>6.</b> client follows the appropriate grant<br/>(code, PKCE, client_credentials,<br/>or ID-JAG via SEP-990)>,
+          fillcolor="#fce7f3", color="#9d174d"];
+  Step7 [label=<<b>7.</b> retry the MCP request with<br/>Authorization: Bearer &lt;token&gt;>,
+          fillcolor="#f0fdf4", color="#166534"];
+
+  Client -> Step1 -> Server;
+  Server -> Step2 [label="401 path"];
+  Server -> Fallback [label="missing-header path", style=dashed];
+  Step2 -> Step3 [label="GET resource_metadata"];
+  Fallback -> Step3;
+  Step3 -> Step4 [label="resolve AS"];
+  Step4 -> Step5;
+  Step5 -> Step6;
+  Step6 -> AS [label="token request"];
+  AS -> Step7 [label="bearer token"];
+  Step7 -> Server [label="authorized retry"];
+
+  // notes
+  draftnote [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+              label=<<b>draft tightening:</b><br align="left"/>multiple authorization_servers are independent.<br align="left"/>Per RFC 6749 §2.2 client IDs belong to one AS only —<br align="left"/>clients MUST keep registration state per-AS.<br align="left"/>>];
+  Step3 -> draftnote [style=dashed, arrowhead=none, color="#94a3b8"];
+
+  rfcnote [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+            label=<<b>both URIs are IANA-registered:</b><br align="left"/>oauth-protected-resource (RFC 9728)<br align="left"/>oauth-authorization-server (RFC 8414)<br align="left"/>>];
+  Step4 -> rfcnote [style=dashed, arrowhead=none, color="#94a3b8"];
+}
