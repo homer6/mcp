@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository purpose
 
-This is a **bridge repo** about the **Model Context Protocol (MCP)** and adjacent web standards (`llms.txt`, `.well-known`). It is a knowledge / documentation repository, not a software project — there is no build, lint, or test pipeline. The work here is:
+This is a **bridge repo** about the **Model Context Protocol (MCP)**, adjacent web standards (`llms.txt`, `.well-known`), and **Claude Code Routines** (cloud-scheduled autonomous Claude Code sessions). It is a knowledge / documentation repository, not a software project — there is no build, lint, or test pipeline. The work here is:
 
 - Exploring protocols and standards in depth
 - Writing long-form explainers in Markdown under `docs/topics/<name>/`

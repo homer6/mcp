@@ -1,0 +1,46 @@
+// A Routine is a saved Claude Code config (prompt + repos + connectors +
+// environment) attached to one or more triggers. The three trigger types
+// can be combined on the same routine, e.g. "review on every PR + nightly
+// sweep + alert-driven on-demand."
+digraph routines_trigger_model {
+  rankdir=LR;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  subgraph cluster_triggers {
+    label="Triggers  (any combination, attached to one routine)";
+    labeljust="l";
+    style="rounded,dashed";
+    color="#0369a1";
+    fontcolor="#0369a1";
+
+    Sched [label=<<b>Schedule</b><br/>preset cadence (hourly,<br/>daily, weekdays, weekly)<br/>OR custom cron via<br/>/schedule update<br/>(min interval: 1 hour)<br/>OR one-off timestamp>,
+            fillcolor="#dbeafe", color="#1e40af"];
+    API   [label=<<b>API</b><br/>HTTP POST to per-routine<br/>/fire endpoint<br/>+ Authorization: Bearer &lt;token&gt;<br/>+ optional { "text": ... } body<br/>(token shown ONCE at generation)>,
+            fillcolor="#fef3c7", color="#b45309"];
+    GH    [label=<<b>GitHub</b><br/>pull_request.* OR release.*<br/>+ filters (author, title, body,<br/>branches, labels, draft, merged)<br/>filters: equals / contains /<br/>starts with / regex (whole field)>,
+            fillcolor="#fce7f3", color="#9d174d"];
+  }
+
+  Routine [shape=record, fillcolor="#dcfce7", color="#166534", style="filled,rounded",
+            label="{<n>Routine\n(saved config)|prompt + model|repositories (cloned each run)|cloud environment (network, env vars, setup)|MCP connectors (writes auto-allowed)}"];
+
+  Run [label=<<b>Cloud session</b><br/>autonomous full Claude Code<br/>NO permission picker<br/>NO approval prompts<br/>pushes to claude/* branches<br/>(unless \"unrestricted\" toggled)>,
+        fillcolor="#f0fdf4", color="#166534"];
+
+  Sched -> Routine [label="cadence match"];
+  API   -> Routine [label="POST /fire"];
+  GH    -> Routine [label="event match"];
+  Routine -> Run   [label="each match → new session"];
+
+  // notes
+  noreuse [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+            label=<<b>session reuse:</b><br align="left"/>each matching trigger creates a NEW session.<br align="left"/>two PR updates → two independent sessions.<br align="left"/>>];
+  Run -> noreuse [style=dashed, arrowhead=none, color="#94a3b8"];
+
+  beta [shape=note, fillcolor="#fef3c7", color="#b45309", fontsize=9,
+         label=<<b>research preview:</b><br align="left"/>API requires beta header<br align="left"/>experimental-cc-routine-2026-04-01.<br align="left"/>two prior versions kept for migration.<br align="left"/>>];
+  API -> beta [style=dashed, arrowhead=none, color="#94a3b8"];
+}

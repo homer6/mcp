@@ -1,0 +1,73 @@
+// Routines occupy a specific niche in the Claude Code automation surface.
+// They are easy to confuse with /loop, Desktop scheduled tasks, and GitHub
+// Actions, but the trade-offs are different on each axis: where it runs,
+// who owns the runtime, what triggers are possible, and what the agent can do.
+digraph routines_vs_similar {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  cmp [shape=plaintext, label=<
+    <table border="1" cellborder="1" cellspacing="0" cellpadding="6">
+      <tr>
+        <td bgcolor="#cbd5e1"><b>feature</b></td>
+        <td bgcolor="#dcfce7"><b>Routines</b></td>
+        <td bgcolor="#dbeafe"><b>Desktop scheduled tasks</b></td>
+        <td bgcolor="#fef3c7"><b>/loop (in-session)</b></td>
+        <td bgcolor="#fce7f3"><b>GitHub Actions</b></td>
+      </tr>
+      <tr><td><b>where it runs</b></td>
+          <td>Anthropic-managed cloud</td>
+          <td>your machine (only when on)</td>
+          <td>your active CLI session</td>
+          <td>GitHub-hosted runners</td></tr>
+      <tr><td><b>survives laptop closed</b></td>
+          <td>yes</td>
+          <td>no</td>
+          <td>no — needs the open session</td>
+          <td>yes</td></tr>
+      <tr><td><b>cadence model</b></td>
+          <td>preset / cron / one-off / events / API</td>
+          <td>local cron-style</td>
+          <td>interval or self-paced</td>
+          <td>repo events + cron</td></tr>
+      <tr><td><b>trigger surface</b></td>
+          <td>schedule + HTTP API + GitHub events</td>
+          <td>schedule only</td>
+          <td>just continues a task</td>
+          <td>repo events + cron + dispatch</td></tr>
+      <tr><td><b>autonomy</b></td>
+          <td>fully autonomous, no approval</td>
+          <td>per local Claude Code permissions</td>
+          <td>per session permissions</td>
+          <td>n/a — runs your scripts</td></tr>
+      <tr><td><b>environment control</b></td>
+              <td>cloud env: network, env vars, setup script</td>
+              <td>local machine</td>
+              <td>local machine</td>
+              <td>action runner image + secrets</td></tr>
+      <tr><td><b>identity</b></td>
+              <td>your claude.ai account; commits as your GitHub user</td>
+              <td>your local user</td>
+              <td>your local user</td>
+              <td>github-actions[bot] or PAT</td></tr>
+      <tr><td><b>billing model</b></td>
+              <td>subscription usage + daily routine cap; one-off exempt; metered overage opt-in</td>
+              <td>your subscription, no extra cap</td>
+              <td>your subscription</td>
+              <td>GitHub Actions minutes</td></tr>
+      <tr><td><b>good for</b></td>
+              <td>unattended, repeatable, cross-system work tied to outcomes</td>
+              <td>local-files work that needs your machine</td>
+              <td>follow-up work in the same session</td>
+              <td>CI / build / release pipelines</td></tr>
+    </table>
+  >];
+
+  legend [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+           label=<<b>rule of thumb:</b><br align="left"/>need it to run when your laptop is closed AND on a schedule or external event → Routine.<br align="left"/>need local file access → Desktop scheduled task.<br align="left"/>follow-up to your current work → /loop.<br align="left"/>tied to a build / CI artifact → GitHub Actions (or Routine with GitHub trigger).<br align="left"/>>];
+
+  cmp -> legend [style=invis];
+}

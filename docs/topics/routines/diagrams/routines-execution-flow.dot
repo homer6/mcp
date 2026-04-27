@@ -1,0 +1,43 @@
+// What happens when a routine fires.
+// The routine runs in a cloud-managed Claude Code session that's fully
+// autonomous: there's no approval UI in the loop. Safety comes from
+// scoping (claude/-prefixed branches, environment-controlled network/secrets,
+// connector subset, account-level identity).
+digraph routines_execution_flow {
+  rankdir=TB;
+  fontname="Helvetica";
+  bgcolor="white";
+  node [fontname="Helvetica", fontsize=11, shape=box, style="filled,rounded"];
+  edge [fontname="Helvetica", fontsize=10, color="#475569"];
+
+  Trig [label="Trigger fires\n(schedule / API / GitHub event)",
+         fillcolor="#dbeafe", color="#1e40af", shape=ellipse];
+  Cap  [label=<<b>Daily-cap check</b><br/>recurring runs count against per-account daily cap;<br/>one-off runs are exempt;<br/>org \"extra usage\" continues on metered overage>,
+         fillcolor="#fef3c7", color="#b45309"];
+  Env  [label=<<b>Cloud environment</b><br/>network access tier<br/>+ env vars (API keys, tokens)<br/>+ setup script (cached)>,
+         fillcolor="#dbeafe", color="#1e40af"];
+  Clone [label=<<b>Clone repositories</b><br/>each repo cloned at start of run<br/>starting from default branch<br/>(unless prompt says otherwise)>,
+          fillcolor="#dcfce7", color="#166534"];
+  Sess [label=<<b>Autonomous Claude Code session</b><br/>NO permission picker<br/>NO approval prompts<br/>can run shell, use repo skills,<br/>call all included connectors (incl. writes)>,
+         fillcolor="#dcfce7", color="#166534"];
+  Branch [label=<<b>Branch policy</b><br/>default: only push to claude/*<br/>opt-in: \"Allow unrestricted branch pushes\"<br/>per-repo>,
+           fillcolor="#fef9c3", color="#a16207"];
+  Identity [label=<<b>Identity</b><br/>routine acts as the owning account:<br/>commits/PRs use your GitHub user;<br/>connector actions use your linked accounts>,
+             fillcolor="#fce7f3", color="#9d174d"];
+  Out  [label=<<b>Session record</b><br/>each run = new session in your list<br/>review changes, open PR,<br/>or continue the conversation>,
+         fillcolor="#f0fdf4", color="#166534"];
+
+  Trig -> Cap;
+  Cap  -> Env  [label="passes"];
+  Cap  -> Trig [label="rejected (cap hit)\nuntil window resets", style=dashed, color="#b91c1c", fontcolor="#b91c1c"];
+  Env  -> Clone;
+  Clone -> Sess;
+  Sess -> Branch [style=dashed];
+  Sess -> Identity [style=dashed];
+  Sess -> Out;
+
+  // text passthrough for API
+  textnote [shape=note, fillcolor="#f8fafc", color="#94a3b8", fontsize=9,
+             label=<<b>API trigger only:</b><br align="left"/>request body { "text": "..." } passes a freeform string<br align="left"/>alongside the saved prompt. Not parsed —<br align="left"/>JSON / structured payloads are received as a literal string.<br align="left"/>>];
+  Trig -> textnote [style=dashed, arrowhead=none, color="#94a3b8"];
+}

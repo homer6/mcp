@@ -1,6 +1,6 @@
 # mcp
 
-A **bridge repo** for exploring the **Model Context Protocol (MCP)** in depth, the adjacent `llms.txt` proposal, and the underlying `.well-known/` web standard.
+A **bridge repo** for exploring the **Model Context Protocol (MCP)** in depth, the adjacent `llms.txt` proposal, the underlying `.well-known/` web standard, and **Claude Code Routines** (cloud-scheduled autonomous Claude Code sessions).
 
 A bridge repo combines original documentation with upstream source-of-truth, pinned as git submodules under `modules/`, so every claim in our docs can be traced back to a specific file in the upstream spec rather than paraphrased from secondary sources.
 
@@ -21,6 +21,10 @@ docs/
     well-known/
       what-is-well-known.md  - introductory explainer for the /.well-known/ standard
       well-known-deep-dive.md - rationale, design tradeoffs, MCP / llms.txt cross-references
+      diagrams/
+    routines/
+      what-is-routines.md    - introductory explainer for Claude Code Routines
+      routines-deep-dive.md  - design rationale, trigger model, autonomy & safety choices
       diagrams/
 modules/
   modelcontextprotocol/      - submodule: github.com/modelcontextprotocol/modelcontextprotocol
@@ -49,6 +53,11 @@ Each topic gets its own subdirectory under `docs/topics/`. The directory layout 
 
 1. [`docs/topics/well-known/what-is-well-known.md`](docs/topics/well-known/what-is-well-known.md)
 2. [`docs/topics/well-known/well-known-deep-dive.md`](docs/topics/well-known/well-known-deep-dive.md)
+
+**Routines** (Claude Code cloud-scheduled autonomous sessions):
+
+1. [`docs/topics/routines/what-is-routines.md`](docs/topics/routines/what-is-routines.md)
+2. [`docs/topics/routines/routines-deep-dive.md`](docs/topics/routines/routines-deep-dive.md) — trigger model, execution autonomy, billing carve-outs, and how routines compare to `/loop`, Desktop scheduled tasks, and GitHub Actions.
 
 ## Diagrams
 
@@ -81,6 +90,14 @@ All diagrams are Graphviz `.dot` source rendered to PNG, stored alongside the do
 | `well-known-anatomy` | URI shape (`/.well-known/<suffix>`) plus IANA registry entry and status tiers (Permanent vs Provisional) |
 | `well-known-mcp-auth-discovery` | MCP's auth discovery chain: 401 → `oauth-protected-resource` (RFC 9728) → `oauth-authorization-server` (RFC 8414) → token request |
 | `well-known-vs-llms-txt` | Why `llms.txt` is *not* a well-known URI, and what would change if it were |
+
+### Routines — `docs/topics/routines/diagrams/`
+
+| Diagram | Topic |
+|---|---|
+| `routines-trigger-model` | Three composable trigger types (Schedule / API / GitHub) attached to one saved routine config |
+| `routines-execution-flow` | What happens when a trigger fires: cap check → cloud env → repo clone → autonomous session → branch policy → session record |
+| `routines-vs-similar` | Comparison matrix: Routines vs Desktop scheduled tasks vs `/loop` vs GitHub Actions |
 
 Render every diagram in the repo:
 
