@@ -134,4 +134,4 @@ For `llms.txt` to become more than an aspirational standard, several things woul
 - **BuiltWith tracker**: 844k+ websites implementing `llms.txt` as of October 2025.
 - **Stripe's `llms.txt`**: notable for its `## Instructions` section; functions as system-prompt-flavored guidance for AI coding assistants.
 
-For a discussion of MCP, the protocol that occupies the runtime space `llms.txt` does not, see [`what-is-mcp.md`](what-is-mcp.md) and [`mcp-deep-dive.md`](mcp-deep-dive.md).
+For a discussion of MCP, the protocol that occupies the runtime space `llms.txt` does not, see [`what-is-mcp.md`](../mcp/what-is-mcp.md) and [`mcp-deep-dive.md`](../mcp/mcp-deep-dive.md).

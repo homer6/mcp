@@ -2,7 +2,7 @@
 
 This document describes the upcoming MCP specification — currently labeled `DRAFT-2026-v1` in `modules/modelcontextprotocol/schema/draft/schema.ts:14` — relative to the latest stable spec, `2025-11-25`. It is a companion to [`mcp-deep-dive.md`](mcp-deep-dive.md): assume that doc as background and read this one for the **delta**.
 
-The official changelog ([`docs/specification/draft/changelog.mdx`](../modules/modelcontextprotocol/docs/specification/draft/changelog.mdx) in the submodule) characterizes the draft as "Minor changes" only — no major surface, no breaking removals. The story is one of **hardening**: features the `2025-11-25` spec introduced as MAY/SHOULD are being upgraded to MUST, and the schema is being formalized with stronger types and a comprehensive examples corpus.
+The official changelog ([`docs/specification/draft/changelog.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/changelog.mdx) in the submodule) characterizes the draft as "Minor changes" only — no major surface, no breaking removals. The story is one of **hardening**: features the `2025-11-25` spec introduced as MAY/SHOULD are being upgraded to MUST, and the schema is being formalized with stronger types and a comprehensive examples corpus.
 
 ***
 
@@ -34,7 +34,7 @@ The protocol-version constant is `LATEST_PROTOCOL_VERSION = "DRAFT-2026-v1"` (`s
 
 In `2025-11-25`, **SEP-2243** added `Mcp-Method` and `Mcp-Name` headers as a routing affordance — load balancers and WAFs could use them to direct traffic without terminating TLS or parsing the JSON body. They were optional. The draft promotes them to **REQUIRED**:
 
-> "The client **MUST** include the standard MCP request headers on each POST request." — [`docs/specification/draft/basic/transports.mdx`](../modules/modelcontextprotocol/docs/specification/draft/basic/transports.mdx)
+> "The client **MUST** include the standard MCP request headers on each POST request." — [`docs/specification/draft/basic/transports.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/basic/transports.mdx)
 
 | Header | Required for |
 |--------|--------------|
@@ -85,7 +85,7 @@ The draft adds a small but explicit RFC compliance rule: when the server returns
 
 ### Standalone GET streams are nearly silent
 
-A subtle but important change in [`docs/specification/draft/basic/transports.mdx`](../modules/modelcontextprotocol/docs/specification/draft/basic/transports.mdx):
+A subtle but important change in [`docs/specification/draft/basic/transports.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/basic/transports.mdx):
 
 > "If the server initiates an SSE stream:
 > – The server **MAY** send JSON-RPC _notifications_ and _pings_ on the stream.
@@ -99,7 +99,7 @@ In `2025-11-25` the corresponding text said the server MAY send JSON-RPC request
 
 In `2025-11-25`, the **SEP-2133** Extensions framework (Final) defined identifiers, lifecycles, and registration paths for extensions like MCP Apps and OAuth Client Credentials. But the *capability negotiation slot* for them lived informally under `experimental` or sat outside the schema entirely.
 
-The draft adds a first-class field. From [`lifecycle.mdx`](../modules/modelcontextprotocol/docs/specification/draft/basic/lifecycle.mdx):
+The draft adds a first-class field. From [`lifecycle.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/basic/lifecycle.mdx):
 
 | Category | Capability | Description |
 |----------|------------|-------------|
@@ -129,7 +129,7 @@ The pre-existing `experimental` slot remains, alongside `extensions`. Use `exper
 
 ## 3. Server-to-client requests must be associated — now MUST
 
-`2025-11-25` already nudged this direction (SEP-2260 was Accepted at that revision); the draft codifies it. The relevant `<Warning>` blocks now appear in both [`client/sampling.mdx`](../modules/modelcontextprotocol/docs/specification/draft/client/sampling.mdx) and [`client/elicitation.mdx`](../modules/modelcontextprotocol/docs/specification/draft/client/elicitation.mdx):
+`2025-11-25` already nudged this direction (SEP-2260 was Accepted at that revision); the draft codifies it. The relevant `<Warning>` blocks now appear in both [`client/sampling.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/client/sampling.mdx) and [`client/elicitation.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/client/elicitation.mdx):
 
 > "Servers **MUST** send server-to-client requests (such as `roots/list`, `sampling/createMessage`, or `elicitation/create`) only in association with an originating client request (e.g., during `tools/call`, `resources/read`, or `prompts/get` processing). Standalone server-initiated requests of these types on independent communication streams (unrelated to any client request) are not supported and **MUST NOT** be implemented. Future transport implementations are not required to support this pattern."
 
@@ -145,7 +145,7 @@ The exception remains `ping`, which can flow either direction at any time.
 
 ## 4. Tools
 
-Three changes in [`server/tools.mdx`](../modules/modelcontextprotocol/docs/specification/draft/server/tools.mdx):
+Three changes in [`server/tools.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/server/tools.mdx):
 
 ### Deterministic ordering (new SHOULD)
 
@@ -165,7 +165,7 @@ Tool input properties **MAY** carry an `x-mcp-header` annotation; see §1 above.
 
 ## 5. Authorization tightening
 
-Several updates in [`basic/authorization.mdx`](../modules/modelcontextprotocol/docs/specification/draft/basic/authorization.mdx):
+Several updates in [`basic/authorization.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/basic/authorization.mdx):
 
 - **OpenID Connect Dynamic Client Registration 1.0** is now explicitly listed as a referenced standard, alongside RFC 7591 DCR.
 - **Per-authorization-server registration state.** When a Protected Resource Metadata document lists multiple `authorization_servers`, each is independent. Per RFC 6749 §2.2, client identifiers belong to the AS that issued them. Clients **MUST** maintain separate registration state (credentials, tokens) per AS and **MUST NOT** assume credentials valid for one AS will work at another.
@@ -178,7 +178,7 @@ These are quality-of-implementation fixes, not new flows. The pattern continues 
 
 ## 6. Sampling — tool-scope clarified
 
-In [`client/sampling.mdx`](../modules/modelcontextprotocol/docs/specification/draft/client/sampling.mdx) the description of `tools` in a `sampling/createMessage` request now adds:
+In [`client/sampling.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/client/sampling.mdx) the description of `tools` in a `sampling/createMessage` request now adds:
 
 > "The tool definitions in the `tools` array are scoped to the sampling request — they don't need to correspond to registered tools."
 
@@ -188,7 +188,7 @@ This was probably implicit in `2025-11-25` but is now explicit: a server can syn
 
 ## 7. Elicitation — stability disclaimer
 
-The draft adds an explicit `<Note>` to [`client/elicitation.mdx`](../modules/modelcontextprotocol/docs/specification/draft/client/elicitation.mdx):
+The draft adds an explicit `<Note>` to [`client/elicitation.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/client/elicitation.mdx):
 
 > "Elicitation is newly introduced in this version of the MCP specification and its design may evolve in future protocol versions."
 
@@ -294,7 +294,7 @@ The draft is **not** ratified. From the upstream submodule's `CLAUDE.md`:
 
 Things that may shift before the next dated release:
 
-- **Elicitation** — explicitly flagged as "design may evolve" in [`client/elicitation.mdx`](../modules/modelcontextprotocol/docs/specification/draft/client/elicitation.mdx).
+- **Elicitation** — explicitly flagged as "design may evolve" in [`client/elicitation.mdx`](../../../modules/modelcontextprotocol/docs/specification/draft/client/elicitation.mdx).
 - **Refresh token guidance (SEP-2207, Accepted)** — currently informational; a future spec could promote pieces to normative.
 - **Anything under `extensions` / `experimental`** — by definition, neither has stability guarantees.
 - **Examples corpus** — likely to grow; specific JSON examples may be edited as types are refined.

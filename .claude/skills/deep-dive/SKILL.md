@@ -1,11 +1,11 @@
 ---
 name: deep-dive
-description: Author a deep-dive companion doc for a topic in this bridge repo, anchored to upstream submodule sources, with Graphviz diagrams. Use when the user asks for a "deep dive" on a topic, says "really understand X", or asks "why is X designed this way" and there's a relevant submodule under `modules/`. The output is a long-form Markdown file in `docs/` paired with `.dot` + `.png` diagrams in `docs/diagrams/`, with every load-bearing claim citing a file path or SEP number in `modules/<upstream>/`.
+description: Author a deep-dive companion doc for a topic in this bridge repo, anchored to upstream submodule sources or normative external standards, with Graphviz diagrams. Use when the user asks for a "deep dive" on a topic, says "really understand X", or asks "why is X designed this way" and there's relevant material in `modules/` or in a referenceable RFC/spec. The output is a long-form Markdown file at `docs/topics/<topic>/<topic>-deep-dive.md` paired with `.dot` + `.png` diagrams in `docs/topics/<topic>/diagrams/`, with every load-bearing claim citing a file path, SEP number, or RFC number.
 ---
 
 # deep-dive
 
-Codifies the workflow that produced `docs/mcp-deep-dive.md`, `docs/mcp-draft-spec.md`, and `docs/llms-txt-deep-dive.md`. The pattern is: **read upstream end-to-end → render diagrams of the load-bearing concepts → write the doc anchored to specific upstream paths**.
+Codifies the workflow that produced `docs/topics/mcp/mcp-deep-dive.md`, `docs/topics/mcp/mcp-draft-spec.md`, `docs/topics/llms-txt/llms-txt-deep-dive.md`, and `docs/topics/well-known/well-known-deep-dive.md`. The pattern is: **read upstream end-to-end → render diagrams of the load-bearing concepts → write the doc anchored to specific upstream paths or normative standards**.
 
 A deep-dive is the *companion* to an introductory explainer (`what-is-<topic>.md`). Don't duplicate the introduction — link to it and go further into the *why*.
 
@@ -69,9 +69,10 @@ One diagram per concept; don't pack two stories into one image. Each diagram sho
 
 ### Step 4 — Author `.dot` source
 
-Place every diagram at `docs/diagrams/<topic-prefix>-<name>.dot`. Naming conventions:
+Place every diagram at `docs/topics/<topic>/diagrams/<topic>-<name>.dot`. Naming conventions:
 
-- Topic prefix groups by subject — `mcp-`, `mcp-draft-`, `llms-txt-`, etc.
+- Diagrams live alongside the doc that uses them, in the topic's own `diagrams/` folder.
+- Filename keeps the topic prefix even though the folder disambiguates — keeps filenames self-describing when referenced elsewhere (`mcp-task-states.dot`, not `task-states.dot`).
 - Names are descriptive: `mcp-task-states`, not `diagram3`.
 
 Every `.dot` file starts with a header comment explaining what the diagram shows and why it matters — future renders depend on understanding intent. Example:
